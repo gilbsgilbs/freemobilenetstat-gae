@@ -72,19 +72,30 @@ public class UpdateChartsTask {
 
         long totalOrange = 0;
         long totalFreeMobile = 0;
+        long totalFreeMobile3g = 0;
+        long totalFreeMobile4g = 0;
+        long totalFreeMobileFemtocell = 0;
         final Set<String> deviceIds = new HashSet<String>(256);
         while (i.hasNext()) {
             final DeviceStat ds = i.next();
             totalOrange += ds.timeOnOrange;
             totalFreeMobile += ds.timeOnFreeMobile;
+            totalFreeMobile3g += ds.timeOnFreeMobile3g;
+            totalFreeMobile4g += ds.timeOnFreeMobile4g;
+            totalFreeMobileFemtocell += ds.timeOnFreeMobileFemtocell;
             deviceIds.add(ds.device.getName());
         }
 
         cdr.put(Constants.CHART_NETWORK_USAGE_USERS, deviceIds.size());
         cdr.put(Constants.CHART_NETWORK_USAGE_ORANGE, totalOrange);
         cdr.put(Constants.CHART_NETWORK_USAGE_FREE_MOBILE, totalFreeMobile);
+        cdr.put(Constants.CHART_NETWORK_USAGE_FREE_MOBILE_3G, totalFreeMobile3g);
+        cdr.put(Constants.CHART_NETWORK_USAGE_FREE_MOBILE_4G, totalFreeMobile4g);
+        cdr.put(Constants.CHART_NETWORK_USAGE_FREE_MOBILE_FEMTOCELL, totalFreeMobileFemtocell);
 
         logger.info("Network usage updated: " + deviceIds.size() + " active devices, " + totalOrange
-                + " ms on Orange, " + totalFreeMobile + " ms on Free Mobile");
+                + " ms on Orange, " + totalFreeMobile + " ms on Free Mobile and "
+                + totalFreeMobile3g + " ms on Free Mobile 3G, " + totalFreeMobile4g + " ms on Free Mobile 4G, "
+                + totalFreeMobileFemtocell + " ms on Free Mobile Femtocell.");
     }
 }

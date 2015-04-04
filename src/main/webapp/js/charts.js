@@ -7,7 +7,7 @@ google.load('visualization', '1.0', {
 google.setOnLoadCallback(loadData);
 
 function loadData() {
-    $.get("/1/chart/network-usage", drawChart).error(dataLoadError);
+    $.get("/1/chart/network-usage", drawCharts).error(dataLoadError);
 }
 
 function dataLoadError() {
@@ -15,16 +15,35 @@ function dataLoadError() {
     $("#network-usage-spinner").append("Données non disponibles pour le moment");
 }
 
-function drawChart(jsonData) {
-    users = jsonData["users"];
+function drawCharts(jsonData) {
+    var users = jsonData["users"];
     $("#users").append(users);
 
-    days = jsonData["days"];
+    var days = jsonData["days"];
     $("#days").append(days);
 
-    onOrange = jsonData["orange"];
-    onFreeMobile = jsonData["freeMobile"];
+    var onOrange = jsonData["orange"];
+    var onFreeMobile = jsonData["freeMobile"];
+    var onFreeMobile3g = jsonData["freeMobile3g"];
+    var onFreeMobile4g = jsonData["freeMobile4g"];
+    var onFreeMobileFemtocell = jsonData["freeMobileFemtocell"];
 
+    drawNetworkUsageChart(users, days, onOrange, onFreeMobile);
+    drawFreeMobileNetworkUsageChart(users, days, onFreeMobile3g, onFreeMobile4g, onFreeMobileFemtocell);
+
+    $("#network-usage-spinner").remove();
+    $("#network-usage-chart").fadeIn(function() {
+        $("#chart-help").slideDown();
+    });
+    $('.bxslider').show().bxSlider({
+        slideWidth: 800,
+        minSlides: 1,
+        maxSlides: 1,
+        slideMargin: 10
+    });
+}
+
+function drawNetworkUsageChart(users, days, onOrange, onFreeMobile) {
     var data = new google.visualization.DataTable();
     data.addColumn("string", "Réseau");
     data.addColumn("number", "Utilisation");
@@ -50,9 +69,34 @@ function drawChart(jsonData) {
     var chart = new google.visualization.PieChart(document
             .getElementById("network-usage-chart"));
     chart.draw(data, options);
+}
 
-    $("#network-usage-spinner").remove();
-    $("#network-usage-chart").fadeIn(function() {
-        $("#chart-help").slideDown();
-    });
+function drawFreeMobileNetworkUsageChart(users, days, onFreeMobile3g, onFreeMobile4g, onFreeMobileFemtocell) {
+    var data = new google.visualization.DataTable();
+    data.addColumn("string", "Type de réseau");
+    data.addColumn("number", "Utilisation");
+
+    data.addRows(3);
+    data.setCell(0, 0, "3G");
+    data.setCell(0, 1, onFreeMobile3g, "");
+    data.setCell(1, 0, "4G");
+    data.setCell(1, 1, onFreeMobile4g, "");
+    data.setCell(2, 0, "Femtocell");
+    data.setCell(2, 1, onFreeMobileFemtocell, "");
+
+    var options = {
+        "width" : 800,
+        "height" : 350,
+        "colors" : [ "#CD1E25", "#660F12", "#D2343A" ],
+        "chartArea" : {
+            left : 300,
+            top : 15,
+            width : "100%",
+            height : "325",
+        },
+    };
+
+    var chart = new google.visualization.PieChart(document
+            .getElementById("freemobile-network-usage-chart"));
+    chart.draw(data, options);
 }

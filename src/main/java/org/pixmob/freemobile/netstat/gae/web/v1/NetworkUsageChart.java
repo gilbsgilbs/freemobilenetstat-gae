@@ -60,6 +60,9 @@ public class NetworkUsageChart {
             nu = new NetworkUsage();
             nu.orange = cdr.get(Constants.CHART_NETWORK_USAGE_ORANGE, 0);
             nu.freeMobile = cdr.get(Constants.CHART_NETWORK_USAGE_FREE_MOBILE, 0);
+            nu.freeMobile3g = cdr.get(Constants.CHART_NETWORK_USAGE_FREE_MOBILE_3G, 0);
+            nu.freeMobile4g = cdr.get(Constants.CHART_NETWORK_USAGE_FREE_MOBILE_4G, 0);
+            nu.freeMobileFemtocell = cdr.get(Constants.CHART_NETWORK_USAGE_FREE_MOBILE_FEMTOCELL, 0);
             nu.users = (int) cdr.get(Constants.CHART_NETWORK_USAGE_USERS, 0);
             nu.days = Constants.NETWORK_USAGE_DAYS;
             memcacheService.put(networkUsageKey, nu, Expiration.byDeltaSeconds(60 * 30));
@@ -84,6 +87,9 @@ public class NetworkUsageChart {
     public static class NetworkUsage implements Externalizable {
         public long orange;
         public long freeMobile;
+        public long freeMobile3g;
+        public long freeMobile4g;
+        public long freeMobileFemtocell;
         public int users;
         public int days;
 
@@ -94,6 +100,9 @@ public class NetworkUsageChart {
         public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
             orange = in.readLong();
             freeMobile = in.readLong();
+            freeMobile3g = in.readLong();
+            freeMobile4g = in.readLong();
+            freeMobileFemtocell = in.readLong();
             users = in.readInt();
             days = in.readInt();
         }
@@ -102,13 +111,18 @@ public class NetworkUsageChart {
         public void writeExternal(ObjectOutput out) throws IOException {
             out.writeLong(orange);
             out.writeLong(freeMobile);
+            out.writeLong(freeMobile3g);
+            out.writeLong(freeMobile4g);
+            out.writeLong(freeMobileFemtocell);
             out.writeInt(users);
             out.writeInt(days);
         }
 
         @Override
         public String toString() {
-            return "orange=" + orange + ", freeMobile=" + freeMobile + ", users=" + users + ", days=" + days;
+            return "orange=" + orange + ", freeMobile=" + freeMobile
+                    + "freeMobile3g=" + freeMobile3g + ", freeMobile4g=" + freeMobile4g
+                    + "freeMobileFemtocell=" + freeMobileFemtocell + ", users=" + users + ", days=" + days;
         }
     }
 }

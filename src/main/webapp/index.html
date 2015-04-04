@@ -9,8 +9,10 @@
 <link rel="author" href="https://plus.google.com/108697477633201807305/" />
 <link rel="shortcut icon" type="image/png" href="favicon.png" />
 <link rel="stylesheet" href="css/screen.css" type="text/css" media="screen">
+<link rel="stylesheet" href="libs/bxslider/jquery.bxslider.css" type="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script type="text/javascript" src="libs/bxslider/jquery.bxslider.min.js"></script>
 <script type="text/javascript" src="js/charts.js"></script>
 </head>
 <script type="text/javascript">
@@ -39,7 +41,10 @@
       <h1>Free Mobile Netstat</h1>
     </div>
     <div id="content">
-      <div id="network-usage-chart"></div>
+      <div class="bxslider" id="charts" style="display: none;">
+          <div id="network-usage-chart" class="slide"></div>
+          <div id="freemobile-network-usage-chart" class="slide"></div>
+      </div>
       <div id="network-usage-spinner">Chargement des données en cours...</div>
       <p id="chart-help">
         Statistiques sur <strong><span id="days"></span> jours</strong> avec <strong><span id="users"></span>
@@ -100,11 +105,11 @@
           href="https://github.com/alexandreroman" rel="me">Alexandre Roman @ GitHub</a>
       </p>
       <p id="license">
-        Le code source du site est <a href="http://github.com/pixmob/freemobilenetstat-gae">disponible</a>
-        sous <a href="https://raw.github.com/pixmob/freemobilenetstat-gae/master/LICENSE">licence ASL 2.0</a>.
+        Le code source du site est <a href="http://github.com/gilbsgilbs/freemobilenetstat-gae">disponible</a>
+        sous <a href="https://raw.github.com/gilbsgilbs/freemobilenetstat-gae/master/LICENSE">licence ASL 2.0</a>.
       </p>
     </div>
-    <a href="https://github.com/pixmob/freemobilenetstat-gae"><img
+    <a href="https://github.com/gilbsgilbs/freemobilenetstat-gae"><img
       style="position: absolute; top: 0; right: 0; border: 0;"
       src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
   </div>

@@ -24,6 +24,9 @@ public final class Constants {
     public static final String CHART_NETWORK_USAGE_USERS = "networkUsage.users";
     public static final String CHART_NETWORK_USAGE_ORANGE = "networkUsage.orange";
     public static final String CHART_NETWORK_USAGE_FREE_MOBILE = "networkUsage.freeMobile";
+    public static final String CHART_NETWORK_USAGE_FREE_MOBILE_3G = "networkUsage.freeMobile3g";
+    public static final String CHART_NETWORK_USAGE_FREE_MOBILE_4G = "networkUsage.freeMobile4g";
+    public static final String CHART_NETWORK_USAGE_FREE_MOBILE_FEMTOCELL = "networkUsage.freeMobileFemtocell";
 
     private Constants() {
     }
