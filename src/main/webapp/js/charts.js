@@ -35,12 +35,7 @@ function drawCharts(jsonData) {
     $("#network-usage-chart").fadeIn(function() {
         $("#chart-help").slideDown();
     });
-    $('.bxslider').show().bxSlider({
-        slideWidth: 800,
-        minSlides: 1,
-        maxSlides: 1,
-        slideMargin: 10
-    });
+    $('.bxslider').show().bxSlider();
 }
 
 function drawNetworkUsageChart(users, days, onOrange, onFreeMobile) {
