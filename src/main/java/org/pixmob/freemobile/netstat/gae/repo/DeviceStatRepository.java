@@ -30,7 +30,8 @@ import com.googlecode.objectify.util.DAOBase;
 public class DeviceStatRepository extends DAOBase {
     private final Logger logger = Logger.getLogger(DeviceStatRepository.class.getName());
 
-    public DeviceStat update(String deviceId, long date, long timeOnOrange, long timeOnFreeMobile)
+    public DeviceStat update(String deviceId, long date, long timeOnOrange, long timeOnFreeMobile,
+                             long timeOnFreeMobile3g, long timeOnFreeMobile4g, long timeOnFreeMobileFemtocell)
             throws DeviceNotFoundException {
         if (deviceId == null) {
             throw new IllegalArgumentException("Device identifier is required");
@@ -55,6 +56,9 @@ public class DeviceStatRepository extends DAOBase {
 
         ds.timeOnOrange = timeOnOrange;
         ds.timeOnFreeMobile = timeOnFreeMobile;
+        ds.timeOnFreeMobile3g = timeOnFreeMobile3g;
+        ds.timeOnFreeMobile4g = timeOnFreeMobile4g;
+        ds.timeOnFreeMobileFemtocell = timeOnFreeMobileFemtocell;
         ofy.put(ds);
 
         return ds;

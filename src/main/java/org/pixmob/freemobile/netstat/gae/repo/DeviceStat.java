@@ -34,4 +34,7 @@ public class DeviceStat {
     public long date;
     public long timeOnOrange;
     public long timeOnFreeMobile;
+    public long timeOnFreeMobile3g;
+    public long timeOnFreeMobile4g;
+    public long timeOnFreeMobileFemtocell;
 }

@@ -66,6 +66,7 @@ public class DailyDeviceStatService {
         logger.fine("Received device statistics: " + s);
 
         final long total = s.timeOnFreeMobile + s.timeOnOrange;
+        final long totalFreeMobile = s.timeOnFreeMobile3g + s.timeOnFreeMobile4g + s.timeOnFreeMobileFemtocell;
 
         final Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -90,13 +91,14 @@ public class DailyDeviceStatService {
             logger.info("Discard old device statistics: " + s);
             return Reply.saying().ok();
         }
-        if (total < 0 || total > 86400 * 1000 || d > maxAge) {
+        if (total < 0 || total > 86400 * 1000 || totalFreeMobile < 0 || totalFreeMobile > 86400 * 1000 || d > maxAge) {
             logger.warning("Invalid daily device statistics: " + s);
             return Reply.saying().status(HttpServletResponse.SC_BAD_REQUEST);
         }
 
         try {
-            dsr.update(deviceId, d, s.timeOnOrange, s.timeOnFreeMobile);
+            dsr.update(deviceId, d, s.timeOnOrange, s.timeOnFreeMobile,
+                    s.timeOnFreeMobile3g, s.timeOnFreeMobile4g, s.timeOnFreeMobileFemtocell);
         } catch (DeviceNotFoundException e) {
             logger.log(Level.WARNING, "Failed to store device statistics", e);
             return Reply.with(e.getMessage()).notFound();
@@ -114,10 +116,15 @@ public class DailyDeviceStatService {
     private static class Stat {
         public long timeOnOrange;
         public long timeOnFreeMobile;
+        public long timeOnFreeMobile3g;
+        public long timeOnFreeMobile4g;
+        public long timeOnFreeMobileFemtocell;
 
         @Override
         public String toString() {
-            return "timeOnOrange=" + timeOnOrange + ", timeOnFreeMobile=" + timeOnFreeMobile;
+            return "timeOnOrange=" + timeOnOrange + ", timeOnFreeMobile=" + timeOnFreeMobile
+                    + "timeOnFreeMobile3g=" + timeOnFreeMobile3g + "timeOnFreeMobile4g=" + timeOnFreeMobile4g
+                    + "timeOnFreeMobileFemtocell=" + timeOnFreeMobileFemtocell;
         }
     }
 }

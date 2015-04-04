@@ -10,10 +10,6 @@
 
     <name>Free Mobile Netstat on Google AppEngine</name>
 
-    <prerequisites>
-        <maven>3.0.4</maven>
-    </prerequisites>
-
     <dependencies>
         <dependency>
             <groupId>com.google.appengine</groupId>
@@ -175,8 +171,8 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                 </configuration>
             </plugin>
 
@@ -210,7 +206,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <gae.version>1.7.4</gae.version>
+        <gae.version>1.9.18</gae.version>
     </properties>
 
     <repositories>
