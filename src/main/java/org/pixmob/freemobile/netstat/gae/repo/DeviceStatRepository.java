@@ -21,13 +21,12 @@ import java.util.logging.Logger;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
-import com.googlecode.objectify.util.DAOBase;
 
 /**
  * {@link DeviceStat} repository.
  * @author Pixmob
  */
-public class DeviceStatRepository extends DAOBase {
+public class DeviceStatRepository {
     private final Logger logger = Logger.getLogger(DeviceStatRepository.class.getName());
 
     public DeviceStat update(String deviceId, long date, long timeOnOrange, long timeOnFreeMobile,
@@ -37,16 +36,16 @@ public class DeviceStatRepository extends DAOBase {
             throw new IllegalArgumentException("Device identifier is required");
         }
 
-        final Objectify ofy = ObjectifyService.begin();
-        final Device ud = ofy.find(Device.class, deviceId);
+        final Objectify ofy = ObjectifyService.ofy();
+        final Device ud = ofy.load().type(Device.class).filter("id", deviceId).first().now();
         if (ud == null) {
             throw new DeviceNotFoundException(deviceId);
         }
 
-        DeviceStat ds = ofy.query(DeviceStat.class).ancestor(ud).filter("date", date).limit(1).get();
+        DeviceStat ds = ofy.load().type(DeviceStat.class).ancestor(ud).filter("date", date).first().now();
         if (ds == null) {
             ds = new DeviceStat();
-            ds.device = new Key<Device>(Device.class, deviceId);
+            ds.device = Key.create(Device.class, deviceId);
             ds.date = date;
 
             logger.info("Creating statistics for device " + deviceId);
@@ -59,25 +58,25 @@ public class DeviceStatRepository extends DAOBase {
         ds.timeOnFreeMobile3g = timeOnFreeMobile3g;
         ds.timeOnFreeMobile4g = timeOnFreeMobile4g;
         ds.timeOnFreeMobileFemtocell = timeOnFreeMobileFemtocell;
-        ofy.put(ds);
+        ofy.save().entity(ds);
 
         return ds;
     }
 
     public Iterator<DeviceStat> getAll(long fromDate, String deviceId) throws DeviceNotFoundException {
         final Iterable<DeviceStat> deviceStats;
-        final Objectify ofy = ObjectifyService.begin();
+        final Objectify ofy = ObjectifyService.ofy();
         Device device = null;
         if (deviceId != null) {
-            device = ofy.find(new Key<Device>(Device.class, deviceId));
+            device = ofy.load().type(Device.class).filter("id", deviceId).first().now();
             if (device == null) {
                 throw new DeviceNotFoundException(deviceId);
             }
-            deviceStats = ofy.query(DeviceStat.class).ancestor(device).filter("date >=", fromDate)
-                    .prefetchSize(30).chunkSize(20);
+            deviceStats = ofy.load().type(DeviceStat.class).ancestor(device).filter("date >=", fromDate).chunk(20);
+                    // .prefetchSize(30).chunkSize(20); // ??
         } else {
-            deviceStats = ofy.query(DeviceStat.class).filter("date >=", fromDate).prefetchSize(300)
-                    .chunkSize(300);
+            deviceStats = ofy.load().type(DeviceStat.class).filter("date >=", fromDate).chunk(300);
+                    // .prefetchSize(30).chunkSize(20); // ??
         }
 
         return deviceStats.iterator();

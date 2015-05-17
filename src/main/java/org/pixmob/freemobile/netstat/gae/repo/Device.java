@@ -15,11 +15,14 @@
  */
 package org.pixmob.freemobile.netstat.gae.repo;
 
+import javax.persistence.Embedded;
 import javax.persistence.Id;
 
-import com.googlecode.objectify.annotation.Cached;
+import com.googlecode.objectify.annotation.Cache;
 
-@Cached(expirationSeconds = 60)
+import java.util.List;
+
+@Cache(expirationSeconds = 60)
 /**
  * User device datastore entity.
  * @author Pixmob
@@ -30,4 +33,6 @@ public class Device {
     public long registrationDate = System.currentTimeMillis();
     public String model;
     public String brand;
+    @Embedded
+    public List<String> supportedNetworks;
 }

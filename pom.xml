@@ -43,7 +43,7 @@
         <dependency>
             <groupId>com.googlecode.objectify</groupId>
             <artifactId>objectify</artifactId>
-            <version>3.1</version>
+            <version>5.1.5</version>
         </dependency>
         <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
@@ -206,7 +206,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <gae.version>1.9.18</gae.version>
+        <gae.version>1.9.19</gae.version>
     </properties>
 
     <repositories>

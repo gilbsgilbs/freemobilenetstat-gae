@@ -15,20 +15,20 @@
  */
 package org.pixmob.freemobile.netstat.gae.repo;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 
-import com.googlecode.objectify.AsyncObjectify;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
-import com.googlecode.objectify.util.DAOBase;
 
 /**
  * {@link Device} repository.
  * @author Pixmob
  */
-public class DeviceRepository extends DAOBase {
+public class DeviceRepository {
     private final Logger logger = Logger.getLogger(DeviceRepository.class.getName());
 
     /**
@@ -36,13 +36,13 @@ public class DeviceRepository extends DAOBase {
      * @throws DeviceException
      *             if the device id is already used
      */
-    public Device create(String deviceId, String brand, String model) throws DeviceException {
+    public Device create(String deviceId, String brand, String model, List<String> supportedNetworks) throws DeviceException {
         if (deviceId == null) {
             throw new IllegalArgumentException("Device identifier is required");
         }
 
-        final Objectify ofy = ObjectifyService.begin();
-        if (ofy.find(new Key<Device>(Device.class, deviceId)) != null) {
+        final Objectify ofy = ObjectifyService.ofy();
+        if (ofy.load().type(Device.class).filter("id", deviceId).count() != 0) {
             throw new DeviceException("Cannot create device: device identifier conflict", deviceId);
         }
 
@@ -50,8 +50,9 @@ public class DeviceRepository extends DAOBase {
         ud.id = deviceId;
         ud.brand = brand;
         ud.model = model;
+        ud.supportedNetworks = supportedNetworks;
 
-        ofy.put(ud);
+        ofy.save().entity(ud);
 
         logger.info("Device created: " + deviceId);
 
@@ -61,14 +62,13 @@ public class DeviceRepository extends DAOBase {
     public void delete(String deviceId) {
         if (deviceId != null) {
             // Get all statistics records for this device.
-            final Objectify ofy = ObjectifyService.begin();
-            final Iterable<DeviceStat> deviceStats = ofy.query(DeviceStat.class).ancestor(
-                    new Key<Device>(Device.class, deviceId));
+            final Objectify ofy = ObjectifyService.ofy();
+            final Iterable<DeviceStat> deviceStats = ofy.load().type(DeviceStat.class).ancestor(Key.create(Device.class, deviceId));
 
             // Delete records related to this device.
-            final AsyncObjectify aofy = ofy.async();
-            aofy.delete(deviceStats);
-            aofy.delete(Device.class, deviceId);
+            ofy.delete().entities(deviceStats);
+            Device device = ofy.load().type(Device.class).filter("id", deviceId).first().now();
+            ofy.delete().entity(device);
 
             logger.info("Device deleted: " + deviceId);
         }
@@ -79,12 +79,12 @@ public class DeviceRepository extends DAOBase {
             throw new IllegalArgumentException("Device identifier is required");
         }
 
-        final Objectify ofy = ObjectifyService.begin();
-        return ofy.find(Device.class, deviceId);
+        final Objectify ofy = ObjectifyService.ofy();
+        return ofy.load().type(Device.class).filter("id", deviceId).first().now();
     }
 
     public Iterator<Device> getAll() {
-        final Objectify ofy = ObjectifyService.begin();
-        return ofy.query(Device.class).iterator();
+        final Objectify ofy = ObjectifyService.ofy();
+        return ofy.load().type(Device.class).iterator();
     }
 }

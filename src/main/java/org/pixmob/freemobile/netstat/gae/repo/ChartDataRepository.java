@@ -34,8 +34,8 @@ public class ChartDataRepository {
             throw new IllegalArgumentException("Name is required");
         }
 
-        final Objectify of = ObjectifyService.begin();
-        final Iterator<ChartData> i = of.query(ChartData.class).order("date").filter("name", name).iterator();
+        final Objectify of = ObjectifyService.ofy();
+        final Iterator<ChartData> i = of.load().type(ChartData.class).order("date").filter("name", name).iterator();
         if (!i.hasNext()) {
             return defaultValue;
         }
@@ -54,7 +54,7 @@ public class ChartDataRepository {
         cd.name = name;
         cd.value = value;
         cd.date = System.currentTimeMillis();
-        ObjectifyService.begin().async().put(cd);
+        ObjectifyService.ofy().save().entity(cd);
     }
 
     public void put(String name, long value) {
@@ -66,14 +66,14 @@ public class ChartDataRepository {
             logger.fine("Putting chart value: " + name + "=" + value);
         }
 
-        final Objectify of = ObjectifyService.begin();
-        of.delete(of.query(ChartData.class).filter("name", name));
+        remove(name);
 
+        final Objectify of = ObjectifyService.ofy();
         final ChartData cd = new ChartData();
         cd.name = name;
         cd.value = value;
         cd.date = System.currentTimeMillis();
-        of.async().put(cd);
+        of.save().entity(cd);
     }
 
     public void remove(String name) {
@@ -81,8 +81,9 @@ public class ChartDataRepository {
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("Remove chart value: " + name);
             }
-            final Objectify of = ObjectifyService.begin();
-            of.delete(of.query(ChartData.class).filter("name", name));
+            final Objectify of = ObjectifyService.ofy();
+            Iterator<ChartData> chartDataIterator = of.load().type(ChartData.class).filter("name", name).iterator();
+            of.delete().entities(chartDataIterator);
         }
     }
 }

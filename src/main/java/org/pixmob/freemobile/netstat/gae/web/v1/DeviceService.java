@@ -15,6 +15,7 @@
  */
 package org.pixmob.freemobile.netstat.gae.web.v1;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,6 +49,7 @@ public class DeviceService {
     }
 
     @Put
+    @Inject
     public Reply<?> register(Request req, @Named("id") String deviceId) {
         final DeviceReg devReg = req.read(DeviceReg.class).as(Json.class);
         devReg.brand = StringUtils.trimToNull(devReg.brand);
@@ -56,7 +58,7 @@ public class DeviceService {
         logger.fine("Trying to register device: " + devReg);
 
         try {
-            dr.create(deviceId, devReg.brand, devReg.model);
+            dr.create(deviceId, devReg.brand, devReg.model, devReg.supportedNetworks);
         } catch (DeviceException e) {
             logger.log(Level.WARNING, "Failed to register device " + deviceId, e);
             return Reply.with(e.getMessage()).status(HttpServletResponse.SC_CONFLICT);
@@ -68,6 +70,7 @@ public class DeviceService {
     }
 
     @Delete
+    @Inject
     public Reply<?> unregister(@Named("id") String deviceId) {
         logger.fine("Trying to unregister device");
         dr.delete(deviceId);
@@ -79,10 +82,11 @@ public class DeviceService {
     private static class DeviceReg {
         public String brand;
         public String model;
+        public List<String> supportedNetworks;
 
         @Override
         public String toString() {
-            return "brand=" + brand + ", model=" + model;
+            return "brand=" + brand + ", model=" + model + ", supportedNetworks=" + supportedNetworks;
         }
     }
 }

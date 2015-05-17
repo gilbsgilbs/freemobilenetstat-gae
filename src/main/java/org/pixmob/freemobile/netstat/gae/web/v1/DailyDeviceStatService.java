@@ -50,6 +50,7 @@ public class DailyDeviceStatService {
     }
 
     @Post
+    @Inject
     public Reply<?> storeStats(Request req, @Named("id") String deviceId, @Named("date") String date) {
         logger.fine("Trying to store device statistics");
 

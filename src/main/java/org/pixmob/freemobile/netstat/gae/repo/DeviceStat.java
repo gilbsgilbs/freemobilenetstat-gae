@@ -18,7 +18,6 @@ package org.pixmob.freemobile.netstat.gae.repo;
 import javax.persistence.Id;
 
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.annotation.Indexed;
 import com.googlecode.objectify.annotation.Parent;
 
 /**
@@ -30,7 +29,6 @@ public class DeviceStat {
     Long id;
     @Parent
     public Key<Device> device;
-    @Indexed
     public long date;
     public long timeOnOrange;
     public long timeOnFreeMobile;
