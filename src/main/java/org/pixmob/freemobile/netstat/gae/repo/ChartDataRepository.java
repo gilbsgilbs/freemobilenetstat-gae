@@ -16,11 +16,14 @@
 package org.pixmob.freemobile.netstat.gae.repo;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.cmd.Query;
 
 /**
  * {@link ChartData} repository.
@@ -47,14 +50,13 @@ public class ChartDataRepository {
             throw new IllegalArgumentException("Name is required");
         }
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Adding chart value: " + name + "=" + value);
-        }
+        logger.fine("Adding chart value: " + name + "=" + value);
+
         final ChartData cd = new ChartData();
         cd.name = name;
         cd.value = value;
         cd.date = System.currentTimeMillis();
-        ObjectifyService.ofy().save().entity(cd);
+        ObjectifyService.ofy().save().entity(cd).now();
     }
 
     public void put(String name, long value) {
@@ -62,9 +64,7 @@ public class ChartDataRepository {
             throw new IllegalArgumentException("Name is required");
         }
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Putting chart value: " + name + "=" + value);
-        }
+        logger.fine("Putting chart value: " + name + "=" + value);
 
         remove(name);
 
@@ -73,17 +73,15 @@ public class ChartDataRepository {
         cd.name = name;
         cd.value = value;
         cd.date = System.currentTimeMillis();
-        of.save().entity(cd);
+        of.save().entity(cd).now();
     }
 
     public void remove(String name) {
         if (name != null) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Remove chart value: " + name);
-            }
+            logger.fine("Remove chart value: " + name);
             final Objectify of = ObjectifyService.ofy();
-            Iterator<ChartData> chartDataIterator = of.load().type(ChartData.class).filter("name", name).iterator();
-            of.delete().entities(chartDataIterator);
+            Iterable<Key<ChartData>> chartData = of.load().type(ChartData.class).filter("name", name).keys();
+            of.delete().keys(chartData);
         }
     }
 }

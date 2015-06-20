@@ -15,24 +15,20 @@
  */
 package org.pixmob.freemobile.netstat.gae.repo;
 
-import javax.persistence.Embedded;
-import javax.persistence.Id;
-
-import com.googlecode.objectify.annotation.Cache;
+import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.*;
 
 import java.util.List;
 
-@Cache(expirationSeconds = 60)
 /**
  * User device datastore entity.
  * @author Pixmob
  */
+@Cache(expirationSeconds = 60)
+@Entity
+@Index
 public class Device {
-    @Id
-    String id;
+    @Id public String id;
     public long registrationDate = System.currentTimeMillis();
-    public String model;
-    public String brand;
-    @Embedded
-    public List<String> supportedNetworks;
+    public Key<KnownDevice> knownDevice;
 }

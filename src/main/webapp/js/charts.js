@@ -11,16 +11,19 @@ function loadData() {
 }
 
 function dataLoadError() {
-    $("#network-usage-spinner").empty();
-    $("#network-usage-spinner").append("Données non disponibles pour le moment");
+    var networkUsageSpinner = $("#network-usage-spinner");
+    networkUsageSpinner.empty();
+    networkUsageSpinner.append("Données non disponibles pour le moment");
 }
 
 function drawCharts(jsonData) {
+    var usersElement = $("#users");
     var users = jsonData["users"];
-    $("#users").append(users);
+    var users4g = jsonData["users4g"];
+    usersElement.text(users);
 
     var days = jsonData["days"];
-    $("#days").append(days);
+    $("#days").text(days);
 
     var onOrange = jsonData["orange"];
     var onFreeMobile = jsonData["freeMobile"];
@@ -28,17 +31,26 @@ function drawCharts(jsonData) {
     var onFreeMobile4g = jsonData["freeMobile4g"];
     var onFreeMobileFemtocell = jsonData["freeMobileFemtocell"];
 
-    drawNetworkUsageChart(users, days, onOrange, onFreeMobile);
-    drawFreeMobileNetworkUsageChart(users, days, onFreeMobile3g, onFreeMobile4g, onFreeMobileFemtocell);
+    drawNetworkUsageChart(onOrange, onFreeMobile);
+    drawFreeMobileNetworkUsageChart(onFreeMobile3g, onFreeMobile4g, onFreeMobileFemtocell);
 
     $("#network-usage-spinner").remove();
     $("#network-usage-chart").fadeIn(function() {
         $("#chart-help").slideDown();
     });
-    $('.bxslider').show().bxSlider();
+    $('.bxslider').show().bxSlider({
+        onSlideBefore: function ($slideElement, oldIndex, newIndex) {
+            if (newIndex === 0) {
+                usersElement.text(users);
+            }
+            else if (newIndex === 1) {
+                usersElement.text(users4g);
+            }
+        }
+    });
 }
 
-function drawNetworkUsageChart(users, days, onOrange, onFreeMobile) {
+function drawNetworkUsageChart(onOrange, onFreeMobile) {
     var data = new google.visualization.DataTable();
     data.addColumn("string", "Réseau");
     data.addColumn("number", "Utilisation");
@@ -57,8 +69,8 @@ function drawNetworkUsageChart(users, days, onOrange, onFreeMobile) {
             left : 300,
             top : 15,
             width : "100%",
-            height : "325",
-        },
+            height : "325"
+        }
     };
 
     var chart = new google.visualization.PieChart(document
@@ -66,7 +78,7 @@ function drawNetworkUsageChart(users, days, onOrange, onFreeMobile) {
     chart.draw(data, options);
 }
 
-function drawFreeMobileNetworkUsageChart(users, days, onFreeMobile3g, onFreeMobile4g, onFreeMobileFemtocell) {
+function drawFreeMobileNetworkUsageChart(onFreeMobile3g, onFreeMobile4g, onFreeMobileFemtocell) {
     var data = new google.visualization.DataTable();
     data.addColumn("string", "Type de réseau");
     data.addColumn("number", "Utilisation");
@@ -87,8 +99,8 @@ function drawFreeMobileNetworkUsageChart(users, days, onFreeMobile3g, onFreeMobi
             left : 300,
             top : 15,
             width : "100%",
-            height : "325",
-        },
+            height : "325"
+        }
     };
 
     var chart = new google.visualization.PieChart(document

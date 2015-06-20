@@ -15,8 +15,12 @@
  */
 package org.pixmob.freemobile.netstat.gae.web;
 
+import com.google.inject.name.Names;
+import com.google.inject.util.Providers;
+import com.googlecode.objectify.ObjectifyFilter;
 import org.pixmob.freemobile.netstat.gae.web.cron.CronServlet;
 import org.pixmob.freemobile.netstat.gae.web.task.UpdateChartsTask;
+import org.pixmob.freemobile.netstat.gae.web.task.UpdateKnownDevices;
 import org.pixmob.freemobile.netstat.gae.web.v1.DailyDeviceStatService;
 import org.pixmob.freemobile.netstat.gae.web.v1.DeviceService;
 import org.pixmob.freemobile.netstat.gae.web.v1.InfoService;
@@ -39,6 +43,7 @@ public class WebModule extends ServletModule {
         // Enable AppEngine Remote API.
         install(new RemoteApiModule());
 
+        filter("/*").through(ObjectifyFilter.class);
         // An AsyncCacheFilter is required in order to use async datastore
         // queries with Objectify.
         final AsyncCacheFilter asyncCacheFilter = new AsyncCacheFilter();
@@ -50,6 +55,7 @@ public class WebModule extends ServletModule {
             @Override
             protected void configureSitebricks() {
                 at("/task/update-charts").serve(UpdateChartsTask.class);
+                at("/task/update-known-devices").serve(UpdateKnownDevices.class);
                 at("/1").serve(InfoService.class);
                 at("/1/device/:id").serve(DeviceService.class);
                 at("/1/device/:id/daily/:date").serve(DailyDeviceStatService.class);

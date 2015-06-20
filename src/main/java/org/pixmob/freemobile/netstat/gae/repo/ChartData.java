@@ -15,15 +15,18 @@
  */
 package org.pixmob.freemobile.netstat.gae.repo;
 
-import javax.persistence.Id;
+import com.googlecode.objectify.annotation.Entity;
+import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Index;
 
 /**
  * Chart value datastore entity.
  * @author Pixmob
  */
+@Entity
+@Index
 public class ChartData {
-    @Id
-    Long id;
+    @Id public Long id;
     public long date;
     public String name;
     public long value;

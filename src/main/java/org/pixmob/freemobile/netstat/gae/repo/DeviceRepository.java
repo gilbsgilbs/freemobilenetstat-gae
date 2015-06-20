@@ -15,14 +15,13 @@
  */
 package org.pixmob.freemobile.netstat.gae.repo;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.logging.Logger;
 
+import com.google.inject.Inject;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.cmd.QueryKeys;
 
 /**
  * {@link Device} repository.
@@ -31,28 +30,34 @@ import com.googlecode.objectify.ObjectifyService;
 public class DeviceRepository {
     private final Logger logger = Logger.getLogger(DeviceRepository.class.getName());
 
+    private final KnownDeviceRepository kdr;
+
+    @Inject
+    DeviceRepository(final KnownDeviceRepository kdr) {
+        this.kdr = kdr;
+    }
     /**
      * Create an user device in the datastore.
      * @throws DeviceException
      *             if the device id is already used
      */
-    public Device create(String deviceId, String brand, String model, List<String> supportedNetworks) throws DeviceException {
+    public Device create(String deviceId, String brand, String model) throws DeviceException {
         if (deviceId == null) {
             throw new IllegalArgumentException("Device identifier is required");
         }
 
         final Objectify ofy = ObjectifyService.ofy();
-        if (ofy.load().type(Device.class).filter("id", deviceId).count() != 0) {
+        if (ofy.load().type(Device.class).id(deviceId).now() != null) {
             throw new DeviceException("Cannot create device: device identifier conflict", deviceId);
         }
 
+        KnownDevice kd = kdr.create(brand, model);
+
         final Device ud = new Device();
         ud.id = deviceId;
-        ud.brand = brand;
-        ud.model = model;
-        ud.supportedNetworks = supportedNetworks;
+        ud.knownDevice = Key.create(kd);
 
-        ofy.save().entity(ud);
+        ofy.save().entity(ud).now();
 
         logger.info("Device created: " + deviceId);
 
@@ -63,14 +68,20 @@ public class DeviceRepository {
         if (deviceId != null) {
             // Get all statistics records for this device.
             final Objectify ofy = ObjectifyService.ofy();
-            final Iterable<DeviceStat> deviceStats = ofy.load().type(DeviceStat.class).ancestor(Key.create(Device.class, deviceId));
+            Device device = ofy.load().type(Device.class).id(deviceId).now();
 
-            // Delete records related to this device.
-            ofy.delete().entities(deviceStats);
-            Device device = ofy.load().type(Device.class).filter("id", deviceId).first().now();
-            ofy.delete().entity(device);
+            if (device != null) {
+                final QueryKeys<DeviceStat> deviceStats = ofy.load().type(DeviceStat.class).filter("device", device).keys();
 
-            logger.info("Device deleted: " + deviceId);
+                // Delete records related to this device.
+                ofy.delete().keys(deviceStats).now();
+                ofy.delete().entity(device).now();
+
+                logger.info("Device deleted: " + deviceId);
+            }
+            else {
+                logger.info("Device not found.");
+            }
         }
     }
 
@@ -80,11 +91,6 @@ public class DeviceRepository {
         }
 
         final Objectify ofy = ObjectifyService.ofy();
-        return ofy.load().type(Device.class).filter("id", deviceId).first().now();
-    }
-
-    public Iterator<Device> getAll() {
-        final Objectify ofy = ObjectifyService.ofy();
-        return ofy.load().type(Device.class).iterator();
+        return ofy.load().type(Device.class).id(deviceId).now();
     }
 }

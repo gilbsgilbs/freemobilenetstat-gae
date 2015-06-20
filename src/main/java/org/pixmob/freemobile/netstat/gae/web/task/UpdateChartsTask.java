@@ -20,11 +20,11 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import com.googlecode.objectify.Objectify;
+import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.util.Closeable;
 import org.pixmob.freemobile.netstat.gae.Constants;
-import org.pixmob.freemobile.netstat.gae.repo.ChartDataRepository;
-import org.pixmob.freemobile.netstat.gae.repo.DeviceNotFoundException;
-import org.pixmob.freemobile.netstat.gae.repo.DeviceStat;
-import org.pixmob.freemobile.netstat.gae.repo.DeviceStatRepository;
+import org.pixmob.freemobile.netstat.gae.repo.*;
 
 import com.google.inject.Inject;
 import com.google.sitebricks.headless.Reply;
@@ -50,17 +50,21 @@ public class UpdateChartsTask {
 
     @Get
     @Post
-    public Reply<?> updateCharts() {
-        logger.info("Updating chart values");
+    public Reply updateCharts() {
+        try (Closeable service = ObjectifyService.begin()) {
+            logger.info("Updating chart values");
 
-        // Update network usage.
-        computeNetworkUsage();
+            // Update network usage.
+            computeNetworkUsage();
 
-        return Reply.saying().ok();
+            return Reply.saying().ok();
+        }
     }
 
     private void computeNetworkUsage() {
         logger.info("Updating network usage chart values");
+
+        final Objectify ofy = ObjectifyService.ofy();
 
         final long fromDate = System.currentTimeMillis() - 86400 * 1000 * Constants.NETWORK_USAGE_DAYS;
         final Iterator<DeviceStat> i;
@@ -75,18 +79,25 @@ public class UpdateChartsTask {
         long totalFreeMobile3g = 0;
         long totalFreeMobile4g = 0;
         long totalFreeMobileFemtocell = 0;
-        final Set<String> deviceIds = new HashSet<String>(256);
+        final Set<String> deviceIds = new HashSet<>(256);
+        final Set<String> device4gIds = new HashSet<>(256);
         while (i.hasNext()) {
             final DeviceStat ds = i.next();
             totalOrange += ds.timeOnOrange;
             totalFreeMobile += ds.timeOnFreeMobile;
-            totalFreeMobile3g += ds.timeOnFreeMobile3g;
-            totalFreeMobile4g += ds.timeOnFreeMobile4g;
-            totalFreeMobileFemtocell += ds.timeOnFreeMobileFemtocell;
+            final Device dv = ofy.load().key(ds.device).now();
+            final KnownDevice kdv = ofy.load().key(dv.knownDevice).now();
+            if (kdv.is4g) {
+                totalFreeMobile3g += ds.timeOnFreeMobile3g;
+                totalFreeMobile4g += ds.timeOnFreeMobile4g;
+                totalFreeMobileFemtocell += ds.timeOnFreeMobileFemtocell;
+                device4gIds.add(ds.device.getName());
+            }
             deviceIds.add(ds.device.getName());
         }
 
         cdr.put(Constants.CHART_NETWORK_USAGE_USERS, deviceIds.size());
+        cdr.put(Constants.CHART_NETWORK_USAGE_4G_USERS, device4gIds.size());
         cdr.put(Constants.CHART_NETWORK_USAGE_ORANGE, totalOrange);
         cdr.put(Constants.CHART_NETWORK_USAGE_FREE_MOBILE, totalFreeMobile);
         cdr.put(Constants.CHART_NETWORK_USAGE_FREE_MOBILE_3G, totalFreeMobile3g);

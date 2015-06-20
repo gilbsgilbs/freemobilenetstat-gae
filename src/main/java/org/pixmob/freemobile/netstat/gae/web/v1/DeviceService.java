@@ -21,6 +21,8 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.util.Closeable;
 import org.apache.commons.lang3.StringUtils;
 import org.pixmob.freemobile.netstat.gae.repo.DeviceException;
 import org.pixmob.freemobile.netstat.gae.repo.DeviceRepository;
@@ -49,44 +51,45 @@ public class DeviceService {
     }
 
     @Put
-    @Inject
-    public Reply<?> register(Request req, @Named("id") String deviceId) {
-        final DeviceReg devReg = req.read(DeviceReg.class).as(Json.class);
-        devReg.brand = StringUtils.trimToNull(devReg.brand);
-        devReg.model = StringUtils.trimToNull(devReg.model);
+    public Reply register(Request<String> req, @Named("id") String deviceId) {
+        try (Closeable service = ObjectifyService.begin()) {
+            final DeviceReg devReg = req.read(DeviceReg.class).as(Json.class);
+            devReg.brand = StringUtils.trimToNull(devReg.brand);
+            devReg.model = StringUtils.trimToNull(devReg.model);
 
-        logger.fine("Trying to register device: " + devReg);
+            logger.fine("Trying to register device: " + devReg);
 
-        try {
-            dr.create(deviceId, devReg.brand, devReg.model, devReg.supportedNetworks);
-        } catch (DeviceException e) {
-            logger.log(Level.WARNING, "Failed to register device " + deviceId, e);
-            return Reply.with(e.getMessage()).status(HttpServletResponse.SC_CONFLICT);
+            try {
+                dr.create(deviceId, devReg.brand, devReg.model);
+            } catch (DeviceException e) {
+                logger.log(Level.WARNING, "Failed to register device " + deviceId, e);
+                return Reply.with(e.getMessage()).status(HttpServletResponse.SC_CONFLICT);
+            }
+
+            logger.info("Device registered");
+
+            return Reply.saying().status(HttpServletResponse.SC_CREATED);
         }
-
-        logger.info("Device registered");
-
-        return Reply.saying().status(HttpServletResponse.SC_CREATED);
     }
 
     @Delete
-    @Inject
-    public Reply<?> unregister(@Named("id") String deviceId) {
-        logger.fine("Trying to unregister device");
-        dr.delete(deviceId);
-        logger.info("Device unregistered");
+    public Reply unregister(@Named("id") String deviceId) {
+        try (Closeable service = ObjectifyService.begin()) {
+            logger.fine("Trying to unregister device");
+            dr.delete(deviceId);
+            logger.info("Device unregistered");
 
-        return Reply.saying().ok();
+            return Reply.saying().ok();
+        }
     }
 
     private static class DeviceReg {
         public String brand;
         public String model;
-        public List<String> supportedNetworks;
 
         @Override
         public String toString() {
-            return "brand=" + brand + ", model=" + model + ", supportedNetworks=" + supportedNetworks;
+            return "brand=" + brand + ", model=" + model;
         }
     }
 }

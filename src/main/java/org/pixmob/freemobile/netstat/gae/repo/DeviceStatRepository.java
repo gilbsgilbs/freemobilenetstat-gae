@@ -37,12 +37,12 @@ public class DeviceStatRepository {
         }
 
         final Objectify ofy = ObjectifyService.ofy();
-        final Device ud = ofy.load().type(Device.class).filter("id", deviceId).first().now();
+        final Device ud = ofy.load().type(Device.class).id(deviceId).now();
         if (ud == null) {
             throw new DeviceNotFoundException(deviceId);
         }
 
-        DeviceStat ds = ofy.load().type(DeviceStat.class).ancestor(ud).filter("date", date).first().now();
+        DeviceStat ds = ofy.load().type(DeviceStat.class).filter("device", ud).filter("date", date).first().now();
         if (ds == null) {
             ds = new DeviceStat();
             ds.device = Key.create(Device.class, deviceId);
@@ -68,11 +68,11 @@ public class DeviceStatRepository {
         final Objectify ofy = ObjectifyService.ofy();
         Device device = null;
         if (deviceId != null) {
-            device = ofy.load().type(Device.class).filter("id", deviceId).first().now();
+            device = ofy.load().type(Device.class).id(deviceId).now();
             if (device == null) {
                 throw new DeviceNotFoundException(deviceId);
             }
-            deviceStats = ofy.load().type(DeviceStat.class).ancestor(device).filter("date >=", fromDate).chunk(20);
+            deviceStats = ofy.load().type(DeviceStat.class).filter("device", device).filter("date >=", fromDate).chunk(20);
                     // .prefetchSize(30).chunkSize(20); // ??
         } else {
             deviceStats = ofy.load().type(DeviceStat.class).filter("date >=", fromDate).chunk(300);

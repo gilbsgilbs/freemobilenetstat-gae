@@ -17,6 +17,7 @@ package org.pixmob.freemobile.netstat.gae.web.v1;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.google.sitebricks.At;
 import com.google.sitebricks.client.transport.Json;
 import com.google.sitebricks.headless.Reply;
 import com.google.sitebricks.headless.Request;
@@ -32,6 +33,8 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.util.Closeable;
 import org.pixmob.freemobile.netstat.gae.repo.DeviceNotFoundException;
 import org.pixmob.freemobile.netstat.gae.repo.DeviceStatRepository;
 
@@ -50,64 +53,65 @@ public class DailyDeviceStatService {
     }
 
     @Post
-    @Inject
-    public Reply<?> storeStats(Request req, @Named("id") String deviceId, @Named("date") String date) {
-        logger.fine("Trying to store device statistics");
+    public Reply storeStats(Request<String> req, @Named("id") String deviceId, @Named("date") String date) {
+        try (Closeable service = ObjectifyService.begin()) {
+            logger.fine("Trying to store device statistics");
 
-        final DateFormat df = new SimpleDateFormat("yyyyMMdd");
-        final long d;
-        try {
-            d = df.parse(date).getTime();
-        } catch (ParseException e) {
-            logger.log(Level.WARNING, "Invalid date: " + date, e);
-            return Reply.with("Invalid date: " + date).status(HttpServletResponse.SC_BAD_REQUEST);
-        }
+            final DateFormat df = new SimpleDateFormat("yyyyMMdd");
+            final long d;
+            try {
+                d = df.parse(date).getTime();
+            } catch (ParseException e) {
+                logger.log(Level.WARNING, "Invalid date: " + date, e);
+                return Reply.with("Invalid date: " + date).status(HttpServletResponse.SC_BAD_REQUEST);
+            }
 
-        final Stat s = req.read(Stat.class).as(Json.class);
-        logger.fine("Received device statistics: " + s);
+            final Stat s = req.read(Stat.class).as(Json.class);
+            logger.fine("Received device statistics: " + s);
 
-        final long total = s.timeOnFreeMobile + s.timeOnOrange;
-        final long totalFreeMobile = s.timeOnFreeMobile3g + s.timeOnFreeMobile4g + s.timeOnFreeMobileFemtocell;
+            final long total = s.timeOnFreeMobile + s.timeOnOrange;
+            final long totalFreeMobile = s.timeOnFreeMobile3g + s.timeOnFreeMobile4g + s.timeOnFreeMobileFemtocell;
 
-        final Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        cal.add(Calendar.DATE, -7);
-        final long minAge = cal.getTimeInMillis();
+            final Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            cal.add(Calendar.DATE, -7);
+            final long minAge = cal.getTimeInMillis();
 
-        cal.setTimeInMillis(System.currentTimeMillis());
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        cal.add(Calendar.DATE, 1);
-        final long maxAge = cal.getTimeInMillis();
+            cal.setTimeInMillis(System.currentTimeMillis());
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            cal.add(Calendar.DATE, 1);
+            final long maxAge = cal.getTimeInMillis();
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("total=" + total + ", minAge=" + minAge + ", maxAge=" + maxAge + ", d=" + d);
-        }
-        if (d < minAge) {
-            logger.info("Discard old device statistics: " + s);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("total=" + total + ", minAge=" + minAge + ", maxAge=" + maxAge + ", d=" + d);
+            }
+            if (d < minAge) {
+                logger.info("Discard old device statistics: " + s);
+                return Reply.saying().ok();
+            }
+            if (total < 0 || total > 86400 * 1000 || totalFreeMobile < 0 || totalFreeMobile > 86400 * 1000 || d > maxAge) {
+                logger.warning("Invalid daily device statistics: " + s);
+                return Reply.saying().status(HttpServletResponse.SC_BAD_REQUEST);
+            }
+
+            try {
+                dsr.update(deviceId, d, s.timeOnOrange, s.timeOnFreeMobile,
+                        s.timeOnFreeMobile3g, s.timeOnFreeMobile4g, s.timeOnFreeMobileFemtocell);
+            } catch (DeviceNotFoundException e) {
+                logger.log(Level.WARNING, "Failed to store device statistics", e);
+                return Reply.with(e.getMessage()).notFound();
+            }
+
+            logger.info("Statistics stored");
+
             return Reply.saying().ok();
         }
-        if (total < 0 || total > 86400 * 1000 || totalFreeMobile < 0 || totalFreeMobile > 86400 * 1000 || d > maxAge) {
-            logger.warning("Invalid daily device statistics: " + s);
-            return Reply.saying().status(HttpServletResponse.SC_BAD_REQUEST);
-        }
-
-        try {
-            dsr.update(deviceId, d, s.timeOnOrange, s.timeOnFreeMobile,
-                    s.timeOnFreeMobile3g, s.timeOnFreeMobile4g, s.timeOnFreeMobileFemtocell);
-        } catch (DeviceNotFoundException e) {
-            logger.log(Level.WARNING, "Failed to store device statistics", e);
-            return Reply.with(e.getMessage()).notFound();
-        }
-
-        logger.info("Statistics stored");
-
-        return Reply.saying().ok();
     }
 
     /**

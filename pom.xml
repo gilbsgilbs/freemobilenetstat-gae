@@ -68,7 +68,7 @@
         <dependency>
             <groupId>com.google.sitebricks</groupId>
             <artifactId>sitebricks</artifactId>
-            <version>0.8.7</version>
+            <version>0.8.10</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.ning</groupId>
@@ -200,13 +200,16 @@
                 <groupId>com.google.appengine</groupId>
                 <artifactId>appengine-maven-plugin</artifactId>
                 <version>${gae.version}</version>
+                <configuration>
+                    <port>8008</port>
+                </configuration>
             </plugin>
         </plugins>
     </build>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <gae.version>1.9.19</gae.version>
+        <gae.version>1.9.22</gae.version>
     </properties>
 
     <repositories>

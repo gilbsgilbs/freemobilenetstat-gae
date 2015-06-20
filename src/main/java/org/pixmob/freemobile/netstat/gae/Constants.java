@@ -22,6 +22,7 @@ package org.pixmob.freemobile.netstat.gae;
 public final class Constants {
     public static final int NETWORK_USAGE_DAYS = 7;
     public static final String CHART_NETWORK_USAGE_USERS = "networkUsage.users";
+    public static final String CHART_NETWORK_USAGE_4G_USERS = "networkUsage.4gUsers";
     public static final String CHART_NETWORK_USAGE_ORANGE = "networkUsage.orange";
     public static final String CHART_NETWORK_USAGE_FREE_MOBILE = "networkUsage.freeMobile";
     public static final String CHART_NETWORK_USAGE_FREE_MOBILE_3G = "networkUsage.freeMobile3g";

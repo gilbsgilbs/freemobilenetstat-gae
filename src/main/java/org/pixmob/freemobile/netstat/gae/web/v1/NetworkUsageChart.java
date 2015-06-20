@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.util.Closeable;
 import org.pixmob.freemobile.netstat.gae.Constants;
 import org.pixmob.freemobile.netstat.gae.repo.ChartDataRepository;
 
@@ -52,32 +54,35 @@ public class NetworkUsageChart {
     }
 
     @Get
-    public Reply<?> networkUsage(Request req) {
-        final String networkUsageKey = "networkUsage";
-        NetworkUsage nu = (NetworkUsage) memcacheService.get(networkUsageKey);
-        if (nu == null) {
-            logger.info("Get network usage from datastore");
-            nu = new NetworkUsage();
-            nu.orange = cdr.get(Constants.CHART_NETWORK_USAGE_ORANGE, 0);
-            nu.freeMobile = cdr.get(Constants.CHART_NETWORK_USAGE_FREE_MOBILE, 0);
-            nu.freeMobile3g = cdr.get(Constants.CHART_NETWORK_USAGE_FREE_MOBILE_3G, 0);
-            nu.freeMobile4g = cdr.get(Constants.CHART_NETWORK_USAGE_FREE_MOBILE_4G, 0);
-            nu.freeMobileFemtocell = cdr.get(Constants.CHART_NETWORK_USAGE_FREE_MOBILE_FEMTOCELL, 0);
-            nu.users = (int) cdr.get(Constants.CHART_NETWORK_USAGE_USERS, 0);
-            nu.days = Constants.NETWORK_USAGE_DAYS;
-            memcacheService.put(networkUsageKey, nu, Expiration.byDeltaSeconds(60 * 30));
-        } else {
-            logger.info("Get network usage from cache");
+    public Reply networkUsage(Request<String> req) {
+        try (Closeable service = ObjectifyService.begin()) {
+            final String networkUsageKey = "networkUsage";
+            NetworkUsage nu = (NetworkUsage) memcacheService.get(networkUsageKey);
+            if (nu == null) {
+                logger.info("Get network usage from datastore");
+                nu = new NetworkUsage();
+                nu.orange = cdr.get(Constants.CHART_NETWORK_USAGE_ORANGE, 0);
+                nu.freeMobile = cdr.get(Constants.CHART_NETWORK_USAGE_FREE_MOBILE, 0);
+                nu.freeMobile3g = cdr.get(Constants.CHART_NETWORK_USAGE_FREE_MOBILE_3G, 0);
+                nu.freeMobile4g = cdr.get(Constants.CHART_NETWORK_USAGE_FREE_MOBILE_4G, 0);
+                nu.freeMobileFemtocell = cdr.get(Constants.CHART_NETWORK_USAGE_FREE_MOBILE_FEMTOCELL, 0);
+                nu.users = (int) cdr.get(Constants.CHART_NETWORK_USAGE_USERS, 0);
+                nu.users4g = (int) cdr.get(Constants.CHART_NETWORK_USAGE_4G_USERS, 0);
+                nu.days = Constants.NETWORK_USAGE_DAYS;
+                memcacheService.put(networkUsageKey, nu, Expiration.byDeltaSeconds(60 * 30));
+            } else {
+                logger.info("Get network usage from cache");
+            }
+
+            // Add cache headers to the response.
+            final int cacheDuration = 60 * 60 * 2; // in seconds
+            final Map<String, String> headers = new HashMap<>(3);
+            headers.put("Cache-Control", "public, max-age=" + cacheDuration);
+            headers.put("Pragma", "Public");
+            headers.put("Age", "0");
+
+            return Reply.with(nu).as(Json.class).headers(headers);
         }
-
-        // Add cache headers to the response.
-        final int cacheDuration = 60 * 60 * 2; // in seconds
-        final Map<String, String> headers = new HashMap<String, String>(3);
-        headers.put("Cache-Control", "public, max-age=" + cacheDuration);
-        headers.put("Pragma", "Public");
-        headers.put("Age", "0");
-
-        return Reply.with(nu).as(Json.class).headers(headers);
     }
 
     /**
@@ -91,6 +96,7 @@ public class NetworkUsageChart {
         public long freeMobile4g;
         public long freeMobileFemtocell;
         public int users;
+        public int users4g;
         public int days;
 
         public NetworkUsage() {

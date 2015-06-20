@@ -20,6 +20,8 @@ import com.google.sitebricks.headless.Request;
 import com.google.sitebricks.headless.Service;
 import com.google.sitebricks.http.Get;
 import com.google.sitebricks.http.Head;
+import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.util.Closeable;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -31,26 +33,30 @@ import java.util.Set;
  * @author Pixmob
  */
 public class InfoService {
-    private static final Set< String> KNOWN_USER_AGENTS = new HashSet< String>(2);
+    private static final Set< String> KNOWN_USER_AGENTS = new HashSet<>(2);
     static {
         KNOWN_USER_AGENTS.add("FreeMobileNetstat/21");
         KNOWN_USER_AGENTS.add("FreeMobileNetstat/22");
     }
 
     @Head
-    public Reply< ?> checkAvailability(Request req) {
-        if (!isClientCompatible(req)) {
-            return Reply.saying().notFound();
+    public Reply checkAvailability(Request<String> req) {
+        try (Closeable service = ObjectifyService.begin()) {
+            if (!isClientCompatible(req)) {
+                return Reply.saying().notFound();
+            }
+            return Reply.saying().ok();
         }
-        return Reply.saying().ok();
     }
 
     @Get
-    public Reply< ?> getAvailability(Request req) {
-        if (!isClientCompatible(req)) {
-            return Reply.saying().notFound();
+    public Reply getAvailability(Request<String> req) {
+        try (Closeable service = ObjectifyService.begin()) {
+            if (!isClientCompatible(req)) {
+                return Reply.saying().notFound();
+            }
+            return Reply.with("Server is up and running!").ok();
         }
-        return Reply.with("Server is up and running!").ok();
     }
 
     private boolean isClientCompatible(Request req) {

@@ -16,6 +16,8 @@
 package org.pixmob.freemobile.netstat.gae.repo;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Singleton;
+import com.googlecode.objectify.ObjectifyFilter;
 import com.googlecode.objectify.ObjectifyService;
 
 /**
@@ -25,10 +27,13 @@ import com.googlecode.objectify.ObjectifyService;
 public class RepositoryModule extends AbstractModule {
     @Override
     protected void configure() {
+        bind(ObjectifyFilter.class).in(Singleton.class);
+        ObjectifyService.register(KnownDevice.class);
         ObjectifyService.register(Device.class);
         ObjectifyService.register(DeviceStat.class);
         ObjectifyService.register(ChartData.class);
 
+        bind(KnownDeviceRepository.class);
         bind(DeviceRepository.class);
         bind(DeviceStatRepository.class);
     }
