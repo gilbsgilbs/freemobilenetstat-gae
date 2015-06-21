@@ -85,9 +85,9 @@ function drawFreeMobileNetworkUsageChart(onFreeMobile3g, onFreeMobile4g, onFreeM
     data.addColumn("number", "Utilisation");
 
     data.addRows(3);
-    data.setCell(0, 0, "3G");
+    data.setCell(0, 0, "3G Free Mobile");
     data.setCell(0, 1, onFreeMobile3g, "");
-    data.setCell(1, 0, "4G");
+    data.setCell(1, 0, "4G Free Mobile");
     data.setCell(1, 1, onFreeMobile4g, "");
     data.setCell(2, 0, "Femtocell");
     data.setCell(2, 1, onFreeMobileFemtocell, "");
