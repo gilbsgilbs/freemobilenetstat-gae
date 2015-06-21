@@ -53,7 +53,7 @@ public class UpdateKnownDevices {
         try (Closeable service = ObjectifyService.begin()) {
             logger.info("Updating chart values");
 
-            final long THRESHOLD_4G = 10; // Devices with 4G time > 10 will be marked as 4G ready
+            final long THRESHOLD_4G = 120; // Devices with 4G time > 120 will be marked as 4G ready
             final long fromDate = System.currentTimeMillis() - 86400 * 1000 * Constants.NETWORK_USAGE_DAYS;
             final Iterator<DeviceStat> i;
             final Objectify ofy = ObjectifyService.ofy();
