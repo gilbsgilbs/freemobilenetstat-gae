@@ -8,9 +8,9 @@ var CHART_OPTIONS = {
     pieSliceText: 'none',
     legend: 'labeled',
     chartArea : {
-        left : (940 - 500) / 2,
+        left : (940 - 550) / 2,
         top : 15,
-        width : 500,
+        width : 550,
         height : "325"
     }
 };
