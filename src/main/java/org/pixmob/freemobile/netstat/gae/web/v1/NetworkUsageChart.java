@@ -110,6 +110,7 @@ public class NetworkUsageChart {
             freeMobile4g = in.readLong();
             freeMobileFemtocell = in.readLong();
             users = in.readInt();
+            users4g = in.readInt();
             days = in.readInt();
         }
 
@@ -121,14 +122,15 @@ public class NetworkUsageChart {
             out.writeLong(freeMobile4g);
             out.writeLong(freeMobileFemtocell);
             out.writeInt(users);
+            out.writeInt(users4g);
             out.writeInt(days);
         }
 
         @Override
         public String toString() {
-            return "orange=" + orange + ", freeMobile=" + freeMobile
-                    + "freeMobile3g=" + freeMobile3g + ", freeMobile4g=" + freeMobile4g
-                    + "freeMobileFemtocell=" + freeMobileFemtocell + ", users=" + users + ", days=" + days;
+            return "orange=" + orange + ", freeMobile=" + freeMobile + "freeMobile3g=" + freeMobile3g
+                    + ", freeMobile4g=" + freeMobile4g + "freeMobileFemtocell=" + freeMobileFemtocell
+                    + ", users=" + users + ", users4g=" + users4g + ", days=" + days;
         }
     }
 }
