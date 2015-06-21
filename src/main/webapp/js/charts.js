@@ -1,7 +1,19 @@
 // Load the Visualization API.
-google.load('visualization', '1.0', {
+google.load('visualization', '1', {
     'packages' : [ 'corechart' ]
 });
+var CHART_OPTIONS = {
+    width : 800,
+    height : 350,
+    pieSliceText: 'none',
+    legend: 'labeled',
+    chartArea : {
+        left : (940 - 500) / 2,
+        top : 15,
+        width : 500,
+        height : "325"
+    }
+};
 
 // Set a callback to run when the Google Visualization API is loaded.
 google.setOnLoadCallback(loadData);
@@ -61,20 +73,9 @@ function drawNetworkUsageChart(onOrange, onFreeMobile) {
     data.setCell(1, 0, "Free Mobile");
     data.setCell(1, 1, onFreeMobile, "");
 
-    var options = {
-        "width" : 800,
-        "height" : 350,
-        "colors" : [ "#FF6600", "#CD1E25" ],
-        "chartArea" : {
-            left : 300,
-            top : 15,
-            width : "100%",
-            height : "325"
-        }
-    };
-
-    var chart = new google.visualization.PieChart(document
-            .getElementById("network-usage-chart"));
+    var chart = new google.visualization.PieChart(document.getElementById("network-usage-chart"));
+    var options = CHART_OPTIONS;
+    options.colors = [ "#FF6600", "#CD1E25" ];
     chart.draw(data, options);
 }
 
@@ -91,19 +92,8 @@ function drawFreeMobileNetworkUsageChart(onFreeMobile3g, onFreeMobile4g, onFreeM
     data.setCell(2, 0, "Femtocell");
     data.setCell(2, 1, onFreeMobileFemtocell, "");
 
-    var options = {
-        "width" : 800,
-        "height" : 350,
-        "colors" : [ "#CD1E25", "#660F12", "#D2343A" ],
-        "chartArea" : {
-            left : 300,
-            top : 15,
-            width : "100%",
-            height : "325"
-        }
-    };
-
-    var chart = new google.visualization.PieChart(document
-            .getElementById("freemobile-network-usage-chart"));
+    var chart = new google.visualization.PieChart(document.getElementById("freemobile-network-usage-chart"));
+    var options = CHART_OPTIONS;
+    options.colors = [ "#CD1E25", "#660F12", "#D2343A" ];
     chart.draw(data, options);
 }
