@@ -15,12 +15,11 @@
  */
 package org.pixmob.freemobile.netstat.gae.repo;
 
-import java.util.Iterator;
 import java.util.logging.Logger;
 
+import static com.googlecode.objectify.ObjectifyService.ofy;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.Objectify;
-import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.cmd.Query;
 
 /**
  * {@link DeviceStat} repository.
@@ -36,13 +35,12 @@ public class DeviceStatRepository {
             throw new IllegalArgumentException("Device identifier is required");
         }
 
-        final Objectify ofy = ObjectifyService.ofy();
-        final Device ud = ofy.load().type(Device.class).id(deviceId).now();
+        final Device ud = ofy().load().type(Device.class).id(deviceId).now();
         if (ud == null) {
             throw new DeviceNotFoundException(deviceId);
         }
 
-        DeviceStat ds = ofy.load().type(DeviceStat.class).filter("device", ud).filter("date", date).first().now();
+        DeviceStat ds = ofy().load().type(DeviceStat.class).filter("device", ud).filter("date", date).first().now();
         if (ds == null) {
             ds = new DeviceStat();
             ds.device = Key.create(Device.class, deviceId);
@@ -58,27 +56,26 @@ public class DeviceStatRepository {
         ds.timeOnFreeMobile3g = timeOnFreeMobile3g;
         ds.timeOnFreeMobile4g = timeOnFreeMobile4g;
         ds.timeOnFreeMobileFemtocell = timeOnFreeMobileFemtocell;
-        ofy.save().entity(ds);
+        ofy().save().entity(ds);
 
         return ds;
     }
 
-    public Iterator<DeviceStat> getAll(long fromDate, String deviceId) throws DeviceNotFoundException {
-        final Iterable<DeviceStat> deviceStats;
-        final Objectify ofy = ObjectifyService.ofy();
+    public Query<DeviceStat> getAll(long fromDate, String deviceId) throws DeviceNotFoundException {
+        final Query<DeviceStat> deviceStats;
         Device device = null;
         if (deviceId != null) {
-            device = ofy.load().type(Device.class).id(deviceId).now();
+            device = ofy().load().type(Device.class).id(deviceId).now();
             if (device == null) {
                 throw new DeviceNotFoundException(deviceId);
             }
-            deviceStats = ofy.load().type(DeviceStat.class).filter("device", device).filter("date >=", fromDate).chunk(20);
+            deviceStats = ofy().cache(false).load().type(DeviceStat.class).filter("device", device).filter("date >=", fromDate).chunk(20);
                     // .prefetchSize(30).chunkSize(20); // ??
         } else {
-            deviceStats = ofy.load().type(DeviceStat.class).filter("date >=", fromDate).chunk(300);
+            deviceStats = ofy().cache(false).load().type(DeviceStat.class).filter("date >=", fromDate).chunk(300);
                     // .prefetchSize(30).chunkSize(20); // ??
         }
 
-        return deviceStats.iterator();
+        return deviceStats;
     }
 }

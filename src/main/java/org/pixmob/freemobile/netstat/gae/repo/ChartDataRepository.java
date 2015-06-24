@@ -16,14 +16,10 @@
 package org.pixmob.freemobile.netstat.gae.repo;
 
 import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.Objectify;
-import com.googlecode.objectify.ObjectifyService;
-import com.googlecode.objectify.cmd.Query;
+import static com.googlecode.objectify.ObjectifyService.ofy;
 
 /**
  * {@link ChartData} repository.
@@ -37,8 +33,7 @@ public class ChartDataRepository {
             throw new IllegalArgumentException("Name is required");
         }
 
-        final Objectify of = ObjectifyService.ofy();
-        final Iterator<ChartData> i = of.load().type(ChartData.class).order("date").filter("name", name).iterator();
+        final Iterator<ChartData> i = ofy().load().type(ChartData.class).order("date").filter("name", name).iterator();
         if (!i.hasNext()) {
             return defaultValue;
         }
@@ -56,7 +51,7 @@ public class ChartDataRepository {
         cd.name = name;
         cd.value = value;
         cd.date = System.currentTimeMillis();
-        ObjectifyService.ofy().save().entity(cd).now();
+        ofy().save().entity(cd).now();
     }
 
     public void put(String name, long value) {
@@ -68,20 +63,18 @@ public class ChartDataRepository {
 
         remove(name);
 
-        final Objectify of = ObjectifyService.ofy();
         final ChartData cd = new ChartData();
         cd.name = name;
         cd.value = value;
         cd.date = System.currentTimeMillis();
-        of.save().entity(cd).now();
+        ofy().save().entity(cd).now();
     }
 
     public void remove(String name) {
         if (name != null) {
             logger.fine("Remove chart value: " + name);
-            final Objectify of = ObjectifyService.ofy();
-            Iterable<Key<ChartData>> chartData = of.load().type(ChartData.class).filter("name", name).keys();
-            of.delete().keys(chartData);
+            Iterable<Key<ChartData>> chartData = ofy().load().type(ChartData.class).filter("name", name).keys();
+            ofy().delete().keys(chartData);
         }
     }
 }

@@ -17,10 +17,10 @@ package org.pixmob.freemobile.netstat.gae.repo;
 
 import java.util.logging.Logger;
 
+import static com.googlecode.objectify.ObjectifyService.ofy;
 import com.google.inject.Inject;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
-import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.cmd.QueryKeys;
 
 /**
@@ -46,8 +46,7 @@ public class DeviceRepository {
             throw new IllegalArgumentException("Device identifier is required");
         }
 
-        final Objectify ofy = ObjectifyService.ofy();
-        if (ofy.load().type(Device.class).id(deviceId).now() != null) {
+        if (ofy().load().type(Device.class).id(deviceId).now() != null) {
             throw new DeviceException("Cannot create device: device identifier conflict", deviceId);
         }
 
@@ -57,7 +56,7 @@ public class DeviceRepository {
         ud.id = deviceId;
         ud.knownDevice = Key.create(kd);
 
-        ofy.save().entity(ud).now();
+        ofy().save().entity(ud).now();
 
         logger.info("Device created: " + deviceId);
 
@@ -67,15 +66,14 @@ public class DeviceRepository {
     public void delete(String deviceId) {
         if (deviceId != null) {
             // Get all statistics records for this device.
-            final Objectify ofy = ObjectifyService.ofy();
-            Device device = ofy.load().type(Device.class).id(deviceId).now();
+            Device device = ofy().load().type(Device.class).id(deviceId).now();
 
             if (device != null) {
-                final QueryKeys<DeviceStat> deviceStats = ofy.load().type(DeviceStat.class).filter("device", device).keys();
+                final QueryKeys<DeviceStat> deviceStats = ofy().load().type(DeviceStat.class).filter("device", device).keys();
 
                 // Delete records related to this device.
-                ofy.delete().keys(deviceStats).now();
-                ofy.delete().entity(device).now();
+                ofy().delete().keys(deviceStats).now();
+                ofy().delete().entity(device).now();
 
                 logger.info("Device deleted: " + deviceId);
             }
@@ -90,7 +88,6 @@ public class DeviceRepository {
             throw new IllegalArgumentException("Device identifier is required");
         }
 
-        final Objectify ofy = ObjectifyService.ofy();
-        return ofy.load().type(Device.class).id(deviceId).now();
+        return ofy().load().type(Device.class).id(deviceId).now();
     }
 }

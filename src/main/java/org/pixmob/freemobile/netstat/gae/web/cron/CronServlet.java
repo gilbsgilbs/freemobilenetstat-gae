@@ -15,7 +15,6 @@
  */
 package org.pixmob.freemobile.netstat.gae.web.cron;
 
-import static com.google.appengine.api.taskqueue.RetryOptions.Builder.withTaskAgeLimitSeconds;
 import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withUrl;
 
 import java.io.IOException;
@@ -28,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.RetryOptions;
 
 /**
  * 3 This servlet is responsible for starting tasks in background.
@@ -52,8 +52,12 @@ public class CronServlet extends HttpServlet {
         final String fullTaskPath = "/task/" + taskPath;
         logger.info("Starting task: " + fullTaskPath);
 
-        final Queue queue = QueueFactory.getDefaultQueue();
-        queue.add(withUrl(fullTaskPath).retryOptions(withTaskAgeLimitSeconds(60 * 10)));
+        final Queue queue = QueueFactory.getQueue("update-queue");
+        queue.add(withUrl(fullTaskPath)
+                        .retryOptions(RetryOptions.Builder.withTaskAgeLimitSeconds(60 * 10))
+                        .retryOptions(RetryOptions.Builder.withMaxBackoffSeconds(60 * 10))
+                        .retryOptions(RetryOptions.Builder.withTaskRetryLimit(2))
+        );
 
         resp.setStatus(HttpServletResponse.SC_OK);
     }

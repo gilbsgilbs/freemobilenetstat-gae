@@ -15,11 +15,10 @@
  */
 package org.pixmob.freemobile.netstat.gae.repo;
 
-import com.googlecode.objectify.Key;
+import static com.googlecode.objectify.ObjectifyService.ofy;
 import com.googlecode.objectify.Objectify;
-import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.cmd.Query;
 
-import java.util.Iterator;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -36,10 +35,7 @@ public class KnownDeviceRepository {
      *             if the device id is already used
      */
     public KnownDevice create(String brand, String model) throws DeviceException {
-        final Objectify ofy = ObjectifyService.ofy();
-
-
-        KnownDevice ud = ofy.load().type(KnownDevice.class).filter("brand", brand).filter("model", model).first().now();
+        KnownDevice ud = ofy().load().type(KnownDevice.class).filter("brand", brand).filter("model", model).first().now();
         if (ud != null) {
             logger.fine("Already known device " + brand + " " + model);
             return ud;
@@ -52,7 +48,7 @@ public class KnownDeviceRepository {
         ud.brand = brand;
         ud.model = model;
 
-        ofy.save().entity(ud).now();
+        ofy().save().entity(ud).now();
 
         return ud;
     }
@@ -60,9 +56,7 @@ public class KnownDeviceRepository {
     public void is4g(Long deviceId) throws KnownDeviceNotFoundException {
         if (deviceId != null) {
             // Get all statistics records for this device.
-            final Objectify ofy = ObjectifyService.ofy();
-
-            KnownDevice device = ofy.load().type(KnownDevice.class).id(deviceId).now();
+            KnownDevice device = ofy().load().type(KnownDevice.class).id(deviceId).now();
 
             if (device == null) {
                 throw new KnownDeviceNotFoundException(deviceId);
@@ -70,7 +64,7 @@ public class KnownDeviceRepository {
 
             device.is4g = true;
 
-            ofy.save().entity(device).now();
+            ofy().save().entity(device).now();
 
             logger.info("Known device " + deviceId + " marked as 4G compatible.");
         }
@@ -81,7 +75,10 @@ public class KnownDeviceRepository {
             throw new IllegalArgumentException("Known Device identifier is required");
         }
 
-        final Objectify ofy = ObjectifyService.ofy();
-        return ofy.load().type(KnownDevice.class).id(deviceId).now();
+        return ofy().load().type(KnownDevice.class).id(deviceId).now();
+    }
+
+    public Query<KnownDevice> getNon4GDevices() {
+        return ofy().load().type(KnownDevice.class).filter("is4g", false);
     }
 }
