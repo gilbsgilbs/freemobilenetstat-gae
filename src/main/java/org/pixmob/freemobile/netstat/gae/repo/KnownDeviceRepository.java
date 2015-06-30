@@ -16,7 +16,6 @@
 package org.pixmob.freemobile.netstat.gae.repo;
 
 import static com.googlecode.objectify.ObjectifyService.ofy;
-import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.cmd.Query;
 
 import java.util.UUID;
@@ -44,7 +43,7 @@ public class KnownDeviceRepository {
         logger.fine("Unknown device. Initializing it.");
 
         ud = new KnownDevice();
-        ud.id = UUID.randomUUID().getMostSignificantBits();
+        ud.id = null;
         ud.brand = brand;
         ud.model = model;
 
@@ -79,6 +78,6 @@ public class KnownDeviceRepository {
     }
 
     public Query<KnownDevice> getNon4GDevices() {
-        return ofy().load().type(KnownDevice.class).filter("is4g", false);
+        return ofy().load().type(KnownDevice.class).filter("is4g", false).limit(1000);
     }
 }

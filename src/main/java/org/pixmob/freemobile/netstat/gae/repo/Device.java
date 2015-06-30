@@ -29,6 +29,6 @@ import java.util.List;
 @Index
 public class Device {
     @Id public String id;
-    public long registrationDate = System.currentTimeMillis();
     public Key<KnownDevice> knownDevice;
+    public long registrationDate = System.currentTimeMillis();
 }

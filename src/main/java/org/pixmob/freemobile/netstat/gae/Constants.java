@@ -28,6 +28,7 @@ public final class Constants {
     public static final String CHART_NETWORK_USAGE_FREE_MOBILE_3G = "networkUsage.freeMobile3g";
     public static final String CHART_NETWORK_USAGE_FREE_MOBILE_4G = "networkUsage.freeMobile4g";
     public static final String CHART_NETWORK_USAGE_FREE_MOBILE_FEMTOCELL = "networkUsage.freeMobileFemtocell";
+    public static final int THRESHOLD_4G = 10000; // Devices with 4G time > 120 will be marked as 4G ready
 
     private Constants() {
     }

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cronentries>
-    <cron>
-        <url>/cron/update-known-devices</url>
-        <description>Update known devices</description>
-        <schedule>every day 06:15</schedule>
-    </cron>
+    <!--<cron>-->
+        <!--<url>/cron/update-known-devices</url>-->
+        <!--<description>Update known devices</description>-->
+        <!--<schedule>every day 06:15</schedule>-->
+    <!--</cron>-->
     <cron>
         <url>/cron/update-charts</url>
         <description>Update chart values</description>

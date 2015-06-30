@@ -15,6 +15,8 @@
  */
 package org.pixmob.freemobile.netstat.gae;
 
+import com.google.inject.Singleton;
+import com.googlecode.objectify.ObjectifyFilter;
 import org.pixmob.freemobile.netstat.gae.repo.RepositoryModule;
 import org.pixmob.freemobile.netstat.gae.web.WebModule;
 
@@ -39,6 +41,7 @@ public class AppConfig extends GuiceServletContextListener {
         @Override
         protected void configure() {
             bind(MemcacheService.class).toInstance(MemcacheServiceFactory.getMemcacheService());
+            bind(ObjectifyFilter.class).in(Singleton.class);
         }
     }
 }

@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 import static com.googlecode.objectify.ObjectifyService.ofy;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
+import org.pixmob.freemobile.netstat.gae.Constants;
 
 /**
  * {@link DeviceStat} repository.
@@ -51,6 +52,18 @@ public class DeviceStatRepository {
             logger.info("Updating statistics for device " + deviceId);
         }
 
+        if (timeOnFreeMobile4g > 0) {
+            Device dv = ofy().load().type(Device.class).id(deviceId).now();
+            KnownDevice kdv = ofy().load().key(dv.knownDevice).now();
+            kdv.timeOn4g += timeOnFreeMobile4g;
+
+            if (kdv.timeOn4g >= Constants.THRESHOLD_4G) {
+                kdv.is4g = true;
+            }
+
+            ofy().save().entity(kdv).now();
+        }
+
         ds.timeOnOrange = timeOnOrange;
         ds.timeOnFreeMobile = timeOnFreeMobile;
         ds.timeOnFreeMobile3g = timeOnFreeMobile3g;
@@ -69,10 +82,10 @@ public class DeviceStatRepository {
             if (device == null) {
                 throw new DeviceNotFoundException(deviceId);
             }
-            deviceStats = ofy().cache(false).load().type(DeviceStat.class).filter("device", device).filter("date >=", fromDate).chunk(20);
+            deviceStats = ofy().load().type(DeviceStat.class).filter("device", device).filter("date >=", fromDate);
                     // .prefetchSize(30).chunkSize(20); // ??
         } else {
-            deviceStats = ofy().cache(false).load().type(DeviceStat.class).filter("date >=", fromDate).chunk(300);
+            deviceStats = ofy().load().type(DeviceStat.class).filter("date >=", fromDate);
                     // .prefetchSize(30).chunkSize(20); // ??
         }
 

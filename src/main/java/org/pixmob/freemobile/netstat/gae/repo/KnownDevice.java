@@ -27,9 +27,10 @@ import com.googlecode.objectify.annotation.Index;
 @Entity
 @Index
 public class KnownDevice {
-    @Id public long id;
+    @Id public Long id;
     public long registrationDate = System.currentTimeMillis();
     public String model;
     public String brand;
+    public long timeOn4g = 0;
     public boolean is4g = false;
 }

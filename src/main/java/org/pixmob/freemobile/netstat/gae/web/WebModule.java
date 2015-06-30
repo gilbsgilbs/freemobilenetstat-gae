@@ -15,10 +15,12 @@
  */
 package org.pixmob.freemobile.netstat.gae.web;
 
+import com.google.inject.Singleton;
 import com.google.inject.name.Names;
 import com.google.inject.util.Providers;
 import com.googlecode.objectify.ObjectifyFilter;
 import org.pixmob.freemobile.netstat.gae.web.cron.CronServlet;
+import org.pixmob.freemobile.netstat.gae.web.task.ResetKnownDevices;
 import org.pixmob.freemobile.netstat.gae.web.task.UpdateChartsTask;
 import org.pixmob.freemobile.netstat.gae.web.task.UpdateKnownDevices;
 import org.pixmob.freemobile.netstat.gae.web.v1.DailyDeviceStatService;
@@ -56,6 +58,7 @@ public class WebModule extends ServletModule {
             protected void configureSitebricks() {
                 at("/task/update-charts").serve(UpdateChartsTask.class);
                 at("/task/update-known-devices").serve(UpdateKnownDevices.class);
+                at("/task/reset-known-devices").serve(ResetKnownDevices.class);
                 at("/1").serve(InfoService.class);
                 at("/1/device/:id").serve(DeviceService.class);
                 at("/1/device/:id/daily/:date").serve(DailyDeviceStatService.class);

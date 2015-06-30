@@ -53,11 +53,7 @@ public class CronServlet extends HttpServlet {
         logger.info("Starting task: " + fullTaskPath);
 
         final Queue queue = QueueFactory.getQueue("update-queue");
-        queue.add(withUrl(fullTaskPath)
-                        .retryOptions(RetryOptions.Builder.withTaskAgeLimitSeconds(60 * 10))
-                        .retryOptions(RetryOptions.Builder.withMaxBackoffSeconds(60 * 10))
-                        .retryOptions(RetryOptions.Builder.withTaskRetryLimit(2))
-        );
+        queue.add(withUrl(fullTaskPath).retryOptions(RetryOptions.Builder.withTaskRetryLimit(0)));
 
         resp.setStatus(HttpServletResponse.SC_OK);
     }
